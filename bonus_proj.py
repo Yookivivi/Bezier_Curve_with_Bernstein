@@ -50,6 +50,7 @@ class BezierBuilder(object):
         self.ann_list_bezier= []
         self.ann_list_points= []
         self.scatter_bezier=[]
+        self.scatter_bernstein=[]
 
 
     def get_has_point(self):
@@ -83,7 +84,6 @@ class BezierBuilder(object):
             self._plot_bezier_with_t(self.t)
             self._plot_bernstein_with_t(self.t)
 
-        self.scatter_bernstein=[]
 
 
     # used in "moving point", checking which point the user clicks
@@ -219,7 +219,8 @@ class BezierBuilder(object):
         self.t=t
         N = len(self.xp) - 1
         if self.scatter_bernstein!=[]:
-            self.scatter_bernstein.remove()  
+            self.scatter_bernstein.remove()
+            self.scatter_bernstein=[]
         if self.ann_list_bernstein!=[]:
             for i, a in enumerate(self.ann_list_bernstein):
                 a.remove()
@@ -266,35 +267,6 @@ def Bezier_with_t(points,t, num=200):
     return curve[0]
 
 
-# from threading import Timer
-# from time import sleep
-
-# class RepeatedTimer(object):
-#     def __init__(self, interval, function, *args, **kwargs):
-#         self._timer     = None
-#         self.interval   = interval
-#         self.function   = function
-#         self.args       = args
-#         self.kwargs     = kwargs
-#         self.is_running = False
-#         self.start()
-
-#     def _run(self):
-#         self.is_running = False
-#         self.start()
-#         self.function(*self.args, **self.kwargs)
-
-#     def start(self):
-#         if not self.is_running:
-#             self._timer = Timer(self.interval, self._run)
-#             self._timer.start()
-#             self.is_running = True
-
-#     def stop(self):
-#         self._timer.cancel()
-#         self.is_running = False
-
-
 class App(ctk.CTk):
         
     def __init__(self):
@@ -309,14 +281,14 @@ class App(ctk.CTk):
                          fg_color="blue")
         self.frame.place(relx=0.33, rely=0.025)
 
-        self.add_button = ctk.CTkButton(master=self, text="add new point", width=300,height=50,command=self.add_point)
-        self.add_button.place(relx=0.15, rely=0.2, anchor=ctk.CENTER)
+        self.add_button = ctk.CTkButton(master=self, text="switch to add point", width=300,height=50,command=self.add_point)
+        self.add_button.place(relx=0.15, rely=0.1, anchor=ctk.CENTER)
 
-        self.move_button = ctk.CTkButton(master=self, text="move point", width=300,height=50,command=self.move_point)
-        self.move_button.place(relx=0.15, rely=0.3, anchor=ctk.CENTER)
+        self.move_button = ctk.CTkButton(master=self, text="switch to move point", width=300,height=50,command=self.move_point)
+        self.move_button.place(relx=0.15, rely=0.2, anchor=ctk.CENTER)
 
-        self.clear_button = ctk.CTkButton(master=self, text="clear", width=300,height=50,command=self.clear)
-        self.clear_button.place(relx=0.15, rely=0.4, anchor=ctk.CENTER)
+        self.clear_button = ctk.CTkButton(master=self, text="clear the canvas", width=300,height=50,command=self.clear)
+        self.clear_button.place(relx=0.15, rely=0.3, anchor=ctk.CENTER)
 
 
         t_value = tkinter.DoubleVar()
@@ -328,18 +300,18 @@ class App(ctk.CTk):
                                     from_=0, to=1,
                                     command=self.slider_function)
         self.slider.set(0)
-        self.slider.place(relx= 0.025,rely=0.6) 
+        self.slider.place(relx= 0.025,rely=0.55) 
+
+        self.description_text = ctk.CTkLabel(master=self, text="Slide to change the t value")
+        self.description_text.place(relx= 0.025,rely=0.45)
 
         self.val_text = ctk.CTkLabel(master=self, text="t =")
-        self.val_text.place(relx= 0.025,rely=0.55)
+        self.val_text.place(relx= 0.025,rely=0.5)
         self.slider_val = ctk.CTkLabel(master=self, textvariable=t_value)
-        self.slider_val.place(relx= 0.043,rely=0.55)
-
-        self.generate_button = ctk.CTkButton(master=self, text="generate", width=300,height=50,command=self.button_function)
-        self.generate_button.place(relx=0.15, rely=0.7, anchor=ctk.CENTER)
+        self.slider_val.place(relx= 0.043,rely=0.5)
         
         self.draw()
-        #self.slider.configure(state='disabled')  # 'normal'
+
         self.protocol("WM_DELETE_WINDOW", self.close_window)
         self.mainloop()
 
@@ -372,29 +344,9 @@ class App(ctk.CTk):
 
 
         self.bezier=BezierBuilder(line, ax2)
-
-
-    def button_function(self):
-        print("button pressed")
-        # if self.bezier.get_has_point():
-        #     # ii=5
-        #     # rt = RepeatedTimer(1, self.slider_function, ii/10) # it auto-starts, no need of rt.start()
-        #     # try:
-        #     #     sleep(5) # your long-running job goes here...
-        #     # finally:
-        #     #     rt.stop() # better in a try/finally block to make sure the program ends!
-        #     print("begin")
-        #     for ii in range(0,10):
-        #         time.sleep(1)
-        #         print("ii", ii/10)
-        #         self.slider.set(ii/10)
-        #         self.slider_function(ii/10)
-        #if self.bezier.get_has_point():
-            #self.bezier._plot_bernstein_with_t(self.t_value.get())
     
     def slider_function(self,t):
         if self.bezier.get_has_point():
-            print("ii111", t)
             self.bezier._plot_bernstein_with_t(t)
             self.bezier._plot_bezier_with_t(t)
     
